@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: leitor-ia
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --timeout 120

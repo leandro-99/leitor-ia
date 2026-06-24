@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leitor de IA</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f1117;
+      color: #e7e9ee;
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container { width: 100%; max-width: 640px; }
+    h1 { font-size: 1.4rem; margin-bottom: 4px; }
+    .sub { color: #8b92a5; font-size: 0.85rem; margin-bottom: 20px; }
+    textarea {
+      width: 100%;
+      min-height: 220px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2a2f3d;
+      background: #1a1d27;
+      color: #e7e9ee;
+      font-size: 1rem;
+      resize: vertical;
+      line-height: 1.5;
+    }
+    textarea:focus { outline: none; border-color: #5b8cff; }
+    .controles {
+      display: flex;
+      gap: 10px;
+      margin: 14px 0;
+      flex-wrap: wrap;
+    }
+    select {
+      flex: 1;
+      min-width: 140px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #2a2f3d;
+      background: #1a1d27;
+      color: #e7e9ee;
+      font-size: 0.9rem;
+    }
+    button {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      background: #5b8cff;
+      color: white;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:active { background: #4a78e0; }
+    button:disabled { background: #3a3f4d; cursor: wait; }
+    .status { text-align: center; margin-top: 14px; color: #8b92a5; font-size: 0.9rem; min-height: 20px; }
+    audio { width: 100%; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔊 Leitor de IA</h1>
+    <div class="sub">Cole o texto e ouça com a voz do Antonio</div>
+
+    <textarea id="texto" placeholder="Cole aqui a resposta..."></textarea>
+
+    <div class="controles">
+      <select id="voz">
+        <option value="pt-BR-AntonioNeural">Antonio (masculina)</option>
+        <option value="pt-BR-FranciscaNeural">Francisca (feminina)</option>
+      </select>
+      <select id="velocidade">
+        <option value="+0%">Normal</option>
+        <option value="+20%">Rápido</option>
+        <option value="+40%">Muito rápido</option>
+        <option value="-15%">Devagar</option>
+      </select>
+    </div>
+
+    <button id="btn" onclick="falar()">▶ Ler em voz alta</button>
+    <div class="status" id="status"></div>
+    <audio id="player" controls style="display:none"></audio>
+  </div>
+
+  <script>
+    async function falar() {
+      const texto = document.getElementById('texto').value.trim();
+      const voz = document.getElementById('voz').value;
+      const velocidade = document.getElementById('velocidade').value;
+      const btn = document.getElementById('btn');
+      const status = document.getElementById('status');
+      const player = document.getElementById('player');
+
+      if (!texto) { status.textContent = 'Cole algum texto primeiro.'; return; }
+
+      btn.disabled = true;
+      status.textContent = 'Gerando voz...';
+
+      try {
+        const resp = await fetch('/falar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ texto, voz, velocidade })
+        });
+
+        if (!resp.ok) throw new Error('Falha ao gerar');
+
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        player.src = url;
+        player.style.display = 'block';
+        player.play();
+        status.textContent = 'Tocando!';
+      } catch (e) {
+        status.textContent = 'Erro: ' + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
