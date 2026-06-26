@@ -9,6 +9,7 @@ import edge_tts
 import asyncio
 import io
 import re
+import emoji
 
 app = Flask(__name__)
 
@@ -37,6 +38,7 @@ def limpar_texto(txt):
     # tabelas
     txt = txt.replace("|", " ")
     txt = re.sub(r"[ \t]{2,}", " ", txt)
+    txt = emoji.replace_emoji(txt, replace='')
     return txt.strip()
 
 
